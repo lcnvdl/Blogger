@@ -1,28 +1,39 @@
+using Application.Blogs;
 using Domain;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Persistence;
 
 namespace API.Controllers
 {
     public class BlogController : BaseController
     {
-        private readonly DataContext _dataContext;
-        public BlogController(DataContext dataContext)
-        {
-            _dataContext = dataContext;
-        }
-
         [HttpGet]
         public async Task<ActionResult<List<Blog>>> GetBlogs()
         {
-            return await _dataContext.Blogs.ToListAsync();
+            return await Mediator.Send(new List.Query());
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<Blog>> GetBlog(Guid id)
         {
-            return await _dataContext.Blogs.FindAsync(id);
+            return await Mediator.Send(new Detail.Query { Id = id });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateBlog(Blog blog)
+        {
+            return Ok(await Mediator.Send(new Create.Command { Blog = blog }));
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteBlog(Guid id)
+        {
+            return Ok(await Mediator.Send(new Delete.Command { Id = id }));
+        }
+
+        [HttpPut]
+        public async Task<IActionResult> UpdateBlog(Blog blog)
+        {
+            return Ok(await Mediator.Send(new Update.Command { Blog = blog }));
         }
     }
 }
